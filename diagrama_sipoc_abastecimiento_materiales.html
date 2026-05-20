@@ -5,293 +5,350 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Diagrama de SIPOC del Proceso de Abastecimiento de Materiales</title>
     <style>
-        :root {
-            --bg-main: #0f172a;
-            --bg-card: #1e293b;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --border-color: #334155;
-            
-            --s-color: #8b5cf6;
-            --i-color: #3b82f6;
-            --p-color: #f59e0b;
-            --o-color: #10b981;
-            --c-color: #ef4444;
-        }
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap');
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
-            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
-            background-color: var(--bg-main);
-            color: var(--text-main);
-            line-height: 1.6;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            padding: 40px;
-        }
-
-        .header {
-            text-align: center;
-            margin-bottom: 50px;
-            animation: fadeInDown 0.8s ease-out;
-        }
-
-        .header-tag {
-            display: inline-block;
-            background: rgba(255, 255, 255, 0.1);
-            color: var(--text-muted);
-            font-size: 12px;
-            font-weight: 600;
-            padding: 6px 16px;
-            border-radius: 20px;
-            margin-bottom: 16px;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            border: 1px solid var(--border-color);
-        }
-
-        .header h1 {
-            font-size: 36px;
-            font-weight: 800;
-            margin-bottom: 12px;
-            background: linear-gradient(to right, #60a5fa, #a78bfa);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .header p {
-            color: var(--text-muted);
-            font-size: 16px;
-            max-width: 700px;
+            font-family: 'DM Sans', Arial, sans-serif;
+            background: #ffffff;
+            color: #1a1917;
+            padding: 48px 40px;
+            max-width: 1560px;
             margin: 0 auto;
+            -webkit-font-smoothing: antialiased;
         }
 
+        /* HEADER */
+        .header {
+            border-bottom: 2px solid #1a1917;
+            padding-bottom: 20px;
+            margin-bottom: 40px;
+            text-align: left;
+        }
+
+        .header-label {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: #888780;
+            margin-bottom: 6px;
+        }
+
+        .header-title {
+            font-size: 26px;
+            font-weight: 600;
+            color: #1a1917;
+            line-height: 1.2;
+        }
+
+        .header-sub {
+            font-size: 13.5px;
+            color: #6b6960;
+            margin-top: 8px;
+            line-height: 1.5;
+        }
+
+        /* SIPOC CONTAINER GRID */
         .sipoc-container {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
             gap: 20px;
-            max-width: 1400px;
-            margin: 0 auto;
-            animation: fadeInUp 1s ease-out;
+            align-items: stretch;
         }
 
         .sipoc-column {
-            background: var(--bg-card);
-            border-radius: 16px;
-            border: 1px solid var(--border-color);
-            overflow: hidden;
+            border-radius: 12px;
+            padding: 24px 20px;
+            border: 1.5px solid;
             display: flex;
             flex-direction: column;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .sipoc-column:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            height: 100%;
         }
 
         .column-header {
-            padding: 24px 20px;
-            text-align: center;
-            border-bottom: 1px solid var(--border-color);
-            position: relative;
-            overflow: hidden;
+            border-bottom: 1.5px solid rgba(26, 25, 23, 0.1);
+            padding-bottom: 16px;
+            margin-bottom: 20px;
+            text-align: left;
         }
-
-        .column-header::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-        }
-
-        .col-s .column-header::before { background: var(--s-color); }
-        .col-i .column-header::before { background: var(--i-color); }
-        .col-p .column-header::before { background: var(--p-color); }
-        .col-o .column-header::before { background: var(--o-color); }
-        .col-c .column-header::before { background: var(--c-color); }
 
         .letter {
-            font-size: 48px;
-            font-weight: 900;
+            font-size: 44px;
+            font-weight: 700;
             line-height: 1;
-            margin-bottom: 8px;
-            opacity: 0.9;
+            margin-bottom: 4px;
         }
 
-        .col-s .letter { color: var(--s-color); }
-        .col-i .letter { color: var(--i-color); }
-        .col-p .letter { color: var(--p-color); }
-        .col-o .letter { color: var(--o-color); }
-        .col-c .letter { color: var(--c-color); }
-
         .title {
-            font-size: 18px;
-            font-weight: 700;
+            font-size: 15px;
+            font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.05em;
         }
 
         .subtitle {
             font-size: 11px;
-            color: var(--text-muted);
-            margin-top: 4px;
+            margin-top: 2px;
+            opacity: 0.75;
         }
 
         .column-content {
-            padding: 20px;
-            flex-grow: 1;
             display: flex;
             flex-direction: column;
             gap: 12px;
+            flex-grow: 1;
         }
 
+        /* ITEM CARD */
         .item-card {
-            background: rgba(15, 23, 42, 0.5);
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            background: #ffffff;
             border-radius: 8px;
-            padding: 14px;
-            font-size: 13px;
-            transition: all 0.2s;
-            position: relative;
-            padding-left: 20px;
+            padding: 12px 14px;
+            font-size: 12.5px;
+            border: 1px solid;
+            line-height: 1.4;
         }
-
-        .item-card::before {
-            content: '•';
-            position: absolute;
-            left: 8px;
-            top: 14px;
-            font-size: 16px;
-            line-height: 1;
-        }
-
-        .col-s .item-card::before { color: var(--s-color); }
-        .col-i .item-card::before { color: var(--i-color); }
-        .col-o .item-card::before { color: var(--o-color); }
-        .col-c .item-card::before { color: var(--c-color); }
 
         .item-title {
             font-weight: 600;
             margin-bottom: 4px;
-            color: #fff;
         }
 
         .item-desc {
-            color: var(--text-muted);
             font-size: 11.5px;
-            line-height: 1.4;
+            opacity: 0.85;
         }
 
+        /* PROCESS STEP */
         .process-step {
-            background: rgba(15, 23, 42, 0.8);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            padding: 14px;
+            background: #ffffff;
+            border-radius: 8px;
+            padding: 12px 14px;
+            font-size: 12.5px;
+            border: 1.5px solid;
+            line-height: 1.4;
             position: relative;
-            margin-bottom: 12px;
-        }
-
-        .process-step:not(:last-child)::after {
-            content: '↓';
-            position: absolute;
-            bottom: -20px;
-            left: 50%;
-            transform: translateX(-50%);
-            color: var(--text-muted);
-            font-size: 16px;
         }
 
         .step-num {
             display: inline-block;
-            background: rgba(245, 158, 11, 0.2);
-            color: #fcd34d;
-            font-size: 10px;
-            font-weight: 800;
-            padding: 2px 8px;
-            border-radius: 12px;
-            margin-bottom: 6px;
+            font-size: 9px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 4px;
         }
 
         .process-step h4 {
             font-size: 13px;
-            color: #fff;
+            font-weight: 600;
             margin-bottom: 4px;
         }
 
         .process-step p {
-            font-size: 11px;
-            color: var(--text-muted);
+            font-size: 11.5px;
+            opacity: 0.85;
         }
 
-        .footer {
-            text-align: center;
-            margin-top: 60px;
-            color: var(--text-muted);
-            font-size: 12px;
-            border-top: 1px solid var(--border-color);
-            padding-top: 20px;
-            padding-bottom: 20px;
+        /* CONNECTOR (VERTICAL ARROWS IN PROCESS COLUMN) */
+        .connector {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0;
+            height: 24px;
+            justify-content: center;
+            margin: -4px 0;
         }
 
-        /* Callouts / Warnings for specific details */
-        .badge-warning {
-            display: inline-block;
-            background: rgba(239, 68, 68, 0.15);
-            color: #fca5a5;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-size: 9px;
-            margin-top: 4px;
+        .connector-line {
+            width: 2px;
+            height: 14px;
         }
 
+        .connector-arrow {
+            width: 0;
+            height: 0;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            border-top: 6px solid;
+        }
+
+        /* BADGES */
         .badge-info {
             display: inline-block;
-            background: rgba(59, 130, 246, 0.15);
-            color: #93c5fd;
+            background: #EFF6FF;
+            color: #0369A1;
+            border: 1px solid rgba(3, 105, 161, 0.2);
+            font-size: 9.5px;
+            font-weight: 600;
             padding: 2px 6px;
             border-radius: 4px;
-            font-size: 9px;
-            margin-top: 4px;
+            margin-top: 6px;
         }
 
-        @keyframes fadeInDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .badge-warning {
+            display: inline-block;
+            background: #FDF4F2;
+            color: #993C1D;
+            border: 1px solid rgba(153, 60, 29, 0.2);
+            font-size: 9.5px;
+            font-weight: 600;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-top: 6px;
+        }
 
+        /* ── COLUMN COLOR SCHEMES ── */
+        
+        /* S - Violet */
+        .col-s { background: #EEEDFE; border-color: #534AB7; }
+        .col-s .letter { color: #3C3489; }
+        .col-s .title { color: #3C3489; }
+        .col-s .subtitle { color: #534AB7; }
+        .col-s .item-card { border-color: rgba(83, 74, 183, 0.2); }
+        .col-s .item-title { color: #3C3489; }
+        .col-s .item-desc { color: #534AB7; }
+
+        /* I - Blue */
+        .col-i { background: #E0F2FE; border-color: #0369A1; }
+        .col-i .letter { color: #0C4A6E; }
+        .col-i .title { color: #0C4A6E; }
+        .col-i .subtitle { color: #0369A1; }
+        .col-i .item-card { border-color: rgba(3, 105, 161, 0.2); }
+        .col-i .item-title { color: #0C4A6E; }
+        .col-i .item-desc { color: #0369A1; }
+
+        /* P - Green */
+        .col-p { background: #E1F5EE; border-color: #0F6E56; }
+        .col-p .letter { color: #085041; }
+        .col-p .title { color: #085041; }
+        .col-p .subtitle { color: #0F6E56; }
+        .col-p .process-step { border-color: rgba(15, 110, 86, 0.3); }
+        .col-p .step-num { color: #0F6E56; }
+        .col-p .process-step h4 { color: #085041; }
+        .col-p .process-step p { color: #0F6E56; }
+        .col-p .connector-line { background: #0F6E56; opacity: 0.4; }
+        .col-p .connector-arrow { border-top-color: #0F6E56; }
+
+        /* O - Orange */
+        .col-o { background: #FAECE7; border-color: #993C1D; }
+        .col-o .letter { color: #712B13; }
+        .col-o .title { color: #712B13; }
+        .col-o .subtitle { color: #993C1D; }
+        .col-o .item-card { border-color: rgba(153, 60, 29, 0.2); }
+        .col-o .item-title { color: #712B13; }
+        .col-o .item-desc { color: #993C1D; }
+
+        /* C - Gray */
+        .col-c { background: #F1EFE8; border-color: #5F5E5A; }
+        .col-c .letter { color: #444441; }
+        .col-c .title { color: #444441; }
+        .col-c .subtitle { color: #5F5E5A; }
+        .col-c .item-card { border-color: rgba(95, 94, 90, 0.2); }
+        .col-c .item-title { color: #444441; }
+        .col-c .item-desc { color: #5F5E5A; }
+
+        /* LEGEND */
+        .legend {
+            margin-top: 48px;
+            border-top: 1px solid #e5e3dc;
+            padding-top: 24px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px 32px;
+            justify-content: flex-start;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: #6b6960;
+            font-weight: 500;
+        }
+
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+            flex-shrink: 0;
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+
+        /* FOOTER */
+        .footer {
+            margin-top: 36px;
+            font-size: 11px;
+            color: #9b9890;
+            letter-spacing: 0.04em;
+            border-top: 1px solid #e5e3dc;
+            padding-top: 16px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* RESPONSIVE LAYOUT */
         @media (max-width: 1200px) {
-            .sipoc-container { grid-template-columns: repeat(3, 1fr); }
-            .col-p { grid-column: span 3; order: -1; margin-bottom: 20px; }
-            .column-content { flex-direction: row; flex-wrap: wrap; }
-            .item-card, .process-step { flex: 1 1 calc(33.333% - 12px); }
-            .process-step:not(:last-child)::after { content: '→'; right: -16px; bottom: 50%; left: auto; transform: translateY(50%); }
+            .sipoc-container {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 16px;
+            }
+            .col-p {
+                grid-column: span 3;
+                order: -1;
+                margin-bottom: 12px;
+            }
         }
+
         @media (max-width: 768px) {
-            .sipoc-container { grid-template-columns: 1fr; }
-            .col-p { grid-column: span 1; }
-            .item-card, .process-step { flex: 1 1 100%; }
-            .process-step:not(:last-child)::after { content: '↓'; bottom: -18px; left: 50%; right: auto; transform: translateX(-50%); }
+            body {
+                padding: 24px 16px;
+            }
+            .sipoc-container {
+                grid-template-columns: 1fr;
+            }
+            .col-p {
+                grid-column: span 1;
+            }
+            .footer {
+                flex-direction: column;
+                gap: 8px;
+                text-align: center;
+            }
+        }
+
+        @media print {
+            body { padding: 24px; }
+            .sipoc-container {
+                grid-template-columns: repeat(5, 1fr) !important;
+                gap: 10px;
+            }
+            .col-p {
+                grid-column: span 1 !important;
+                order: initial !important;
+                margin-bottom: 0 !important;
+            }
+            .sipoc-column {
+                page-break-inside: avoid;
+            }
         }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <div class="header-tag">Mapeo del Proceso "As-Is" (Estado Actual)</div>
-        <h1>Diagrama de SIPOC del Proceso de Abastecimiento de Materiales</h1>
-        <p>Representación macro del flujo de abastecimiento de materiales productivos (y promocionales), abarcando desde la planificación de demanda hasta el registro de la factura en SAP para su pago.</p>
+        <div class="header-label">Mapeo del Proceso "As-Is" (Estado Actual)</div>
+        <h1 class="header-title">Diagrama de SIPOC del Proceso de Abastecimiento de Materiales</h1>
+        <p class="header-sub">Representación macro del flujo de abastecimiento de materiales productivos (y promocionales), abarcando desde la planificación de demanda hasta el registro de la factura en SAP para su pago.</p>
     </div>
 
     <div class="sipoc-container">
         
-        <!-- SUPPLIERS -->
+        <!-- SUPPLIERS (Violet) -->
         <div class="sipoc-column col-s">
             <div class="column-header">
                 <div class="letter">S</div>
@@ -318,7 +375,7 @@
             </div>
         </div>
 
-        <!-- INPUTS -->
+        <!-- INPUTS (Blue) -->
         <div class="sipoc-column col-i">
             <div class="column-header">
                 <div class="letter">I</div>
@@ -355,7 +412,7 @@
             </div>
         </div>
 
-        <!-- PROCESS -->
+        <!-- PROCESS (Green) -->
         <div class="sipoc-column col-p">
             <div class="column-header">
                 <div class="letter">P</div>
@@ -364,49 +421,70 @@
             </div>
             <div class="column-content">
                 <div class="process-step">
-                    <span class="step-num">Paso 1</span>
+                    <span class="step-num">Paso 01</span>
                     <h4>Plan de Ventas / Plan de Mercadeo</h4>
                     <p>Define el plan de necesidades de Producto Terminado (Operaciones) o el presupuesto para proyectos (Mercadeo).</p>
                 </div>
+                
+                <div class="connector"><div class="connector-line"></div><div class="connector-arrow"></div></div>
+
                 <div class="process-step">
-                    <span class="step-num">Paso 2</span>
+                    <span class="step-num">Paso 02</span>
                     <h4>Identificación de Materiales</h4>
                     <p>Determinación de los materiales requeridos para cumplir el plan de necesidades de PT o el proyecto de Mercadeo.</p>
                 </div>
+
+                <div class="connector"><div class="connector-line"></div><div class="connector-arrow"></div></div>
+
                 <div class="process-step">
-                    <span class="step-num">Paso 3</span>
+                    <span class="step-num">Paso 03</span>
                     <h4>Generación de SOL PED</h4>
                     <p>Los planificadores de Mercadeo o Abastecimiento emiten formalmente la Solicitud de Pedido en el sistema.</p>
                 </div>
+
+                <div class="connector"><div class="connector-line"></div><div class="connector-arrow"></div></div>
+
                 <div class="process-step">
-                    <span class="step-num">Paso 4</span>
+                    <span class="step-num">Paso 04</span>
                     <h4>Proceso de Compra</h4>
                     <p>Los compradores asignados gestionan la compra garantizando la entrega de materiales en los tiempos acordados.</p>
                 </div>
+
+                <div class="connector"><div class="connector-line"></div><div class="connector-arrow"></div></div>
+
                 <div class="process-step">
-                    <span class="step-num">Paso 5</span>
+                    <span class="step-num">Paso 05</span>
                     <h4>Logística y Transporte</h4>
                     <p>Logística coordina el traslado del material (importado o nacional) hasta el almacén de destino.</p>
                 </div>
+
+                <div class="connector"><div class="connector-line"></div><div class="connector-arrow"></div></div>
+
                 <div class="process-step">
-                    <span class="step-num">Paso 6</span>
+                    <span class="step-num">Paso 06</span>
                     <h4>Recepción y Registro de Factura</h4>
                     <p>Se recibe la factura del proveedor y se registra en SAP. El momento de entrega varía según la modalidad de compra.</p>
                 </div>
+
+                <div class="connector"><div class="connector-line"></div><div class="connector-arrow"></div></div>
+
                 <div class="process-step">
-                    <span class="step-num">Paso 7</span>
+                    <span class="step-num">Paso 07</span>
                     <h4>Entrada de Mercancía</h4>
                     <p>El almacén confirma la recepción física del material y registra formalmente la Entrada de Mercancía en SAP.</p>
                 </div>
+
+                <div class="connector"><div class="connector-line"></div><div class="connector-arrow"></div></div>
+
                 <div class="process-step">
-                    <span class="step-num">Paso 8</span>
+                    <span class="step-num">Paso 08</span>
                     <h4>Pago al Proveedor</h4>
                     <p>Según las condiciones de pago pautadas, se gestionan y ejecutan los pagos correspondientes al proveedor.</p>
                 </div>
             </div>
         </div>
 
-        <!-- OUTPUTS -->
+        <!-- OUTPUTS (Orange) -->
         <div class="sipoc-column col-o">
             <div class="column-header">
                 <div class="letter">O</div>
@@ -437,12 +515,12 @@
             </div>
         </div>
 
-        <!-- CUSTOMERS -->
+        <!-- CUSTOMERS (Gray) -->
         <div class="sipoc-column col-c">
             <div class="column-header">
                 <div class="letter">C</div>
                 <div class="title">Customers</div>
-                <div class="subtitle">Clientes (Internos/Externos)</div>
+                <div class="subtitle">Clientes</div>
             </div>
             <div class="column-content">
                 <div class="item-card">
@@ -466,8 +544,19 @@
 
     </div>
 
+    <!-- LEGEND -->
+    <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#EEEDFE; border-color:#534AB7;"></div>S — Suppliers (Violeta)</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#E0F2FE; border-color:#0369A1;"></div>I — Inputs (Azul)</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#E1F5EE; border-color:#0F6E56;"></div>P — Process (Verde)</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#FAECE7; border-color:#993C1D;"></div>O — Outputs (Naranja/Rojo)</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#F1EFE8; border-color:#5F5E5A;"></div>C — Customers (Gris)</div>
+    </div>
+
+    <!-- FOOTER -->
     <div class="footer">
-        Diseñado para el Proyecto de Grado · Estado Actual (As-Is)
+        <span>Diagrama de SIPOC — Proceso de Abastecimiento de Materiales</span>
+        <span>Mapeo As-Is (Estado Actual) · Proyecto de Grado Ignacio Montbrun · 2026</span>
     </div>
 
 </body>
