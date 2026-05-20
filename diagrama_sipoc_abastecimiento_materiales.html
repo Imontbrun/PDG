@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagrama de SIPOC del Proceso de Abastecimiento de Materiales</title>
+    <style>
+        :root {
+            --bg-main: #0f172a;
+            --bg-card: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: #334155;
+            
+            --s-color: #8b5cf6;
+            --i-color: #3b82f6;
+            --p-color: #f59e0b;
+            --o-color: #10b981;
+            --c-color: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 40px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 50px;
+            animation: fadeInDown 0.8s ease-out;
+        }
+
+        .header-tag {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-muted);
+            font-size: 12px;
+            font-weight: 600;
+            padding: 6px 16px;
+            border-radius: 20px;
+            margin-bottom: 16px;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            border: 1px solid var(--border-color);
+        }
+
+        .header h1 {
+            font-size: 36px;
+            font-weight: 800;
+            margin-bottom: 12px;
+            background: linear-gradient(to right, #60a5fa, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header p {
+            color: var(--text-muted);
+            font-size: 16px;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .sipoc-container {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+            animation: fadeInUp 1s ease-out;
+        }
+
+        .sipoc-column {
+            background: var(--bg-card);
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .sipoc-column:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .column-header {
+            padding: 24px 20px;
+            text-align: center;
+            border-bottom: 1px solid var(--border-color);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .column-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+        }
+
+        .col-s .column-header::before { background: var(--s-color); }
+        .col-i .column-header::before { background: var(--i-color); }
+        .col-p .column-header::before { background: var(--p-color); }
+        .col-o .column-header::before { background: var(--o-color); }
+        .col-c .column-header::before { background: var(--c-color); }
+
+        .letter {
+            font-size: 48px;
+            font-weight: 900;
+            line-height: 1;
+            margin-bottom: 8px;
+            opacity: 0.9;
+        }
+
+        .col-s .letter { color: var(--s-color); }
+        .col-i .letter { color: var(--i-color); }
+        .col-p .letter { color: var(--p-color); }
+        .col-o .letter { color: var(--o-color); }
+        .col-c .letter { color: var(--c-color); }
+
+        .title {
+            font-size: 18px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .subtitle {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .column-content {
+            padding: 20px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .item-card {
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 14px;
+            font-size: 13px;
+            transition: all 0.2s;
+            position: relative;
+            padding-left: 20px;
+        }
+
+        .item-card::before {
+            content: '•';
+            position: absolute;
+            left: 8px;
+            top: 14px;
+            font-size: 16px;
+            line-height: 1;
+        }
+
+        .col-s .item-card::before { color: var(--s-color); }
+        .col-i .item-card::before { color: var(--i-color); }
+        .col-o .item-card::before { color: var(--o-color); }
+        .col-c .item-card::before { color: var(--c-color); }
+
+        .item-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: #fff;
+        }
+
+        .item-desc {
+            color: var(--text-muted);
+            font-size: 11.5px;
+            line-height: 1.4;
+        }
+
+        .process-step {
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 14px;
+            position: relative;
+            margin-bottom: 12px;
+        }
+
+        .process-step:not(:last-child)::after {
+            content: '↓';
+            position: absolute;
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: var(--text-muted);
+            font-size: 16px;
+        }
+
+        .step-num {
+            display: inline-block;
+            background: rgba(245, 158, 11, 0.2);
+            color: #fcd34d;
+            font-size: 10px;
+            font-weight: 800;
+            padding: 2px 8px;
+            border-radius: 12px;
+            margin-bottom: 6px;
+        }
+
+        .process-step h4 {
+            font-size: 13px;
+            color: #fff;
+            margin-bottom: 4px;
+        }
+
+        .process-step p {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 60px;
+            color: var(--text-muted);
+            font-size: 12px;
+            border-top: 1px solid var(--border-color);
+            padding-top: 20px;
+            padding-bottom: 20px;
+        }
+
+        /* Callouts / Warnings for specific details */
+        .badge-warning {
+            display: inline-block;
+            background: rgba(239, 68, 68, 0.15);
+            color: #fca5a5;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 9px;
+            margin-top: 4px;
+        }
+
+        .badge-info {
+            display: inline-block;
+            background: rgba(59, 130, 246, 0.15);
+            color: #93c5fd;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 9px;
+            margin-top: 4px;
+        }
+
+        @keyframes fadeInDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        @media (max-width: 1200px) {
+            .sipoc-container { grid-template-columns: repeat(3, 1fr); }
+            .col-p { grid-column: span 3; order: -1; margin-bottom: 20px; }
+            .column-content { flex-direction: row; flex-wrap: wrap; }
+            .item-card, .process-step { flex: 1 1 calc(33.333% - 12px); }
+            .process-step:not(:last-child)::after { content: '→'; right: -16px; bottom: 50%; left: auto; transform: translateY(50%); }
+        }
+        @media (max-width: 768px) {
+            .sipoc-container { grid-template-columns: 1fr; }
+            .col-p { grid-column: span 1; }
+            .item-card, .process-step { flex: 1 1 100%; }
+            .process-step:not(:last-child)::after { content: '↓'; bottom: -18px; left: 50%; right: auto; transform: translateX(-50%); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="header-tag">Mapeo del Proceso "As-Is" (Estado Actual)</div>
+        <h1>Diagrama de SIPOC del Proceso de Abastecimiento de Materiales</h1>
+        <p>Representación macro del flujo de abastecimiento de materiales productivos (y promocionales), abarcando desde la planificación de demanda hasta el registro de la factura en SAP para su pago.</p>
+    </div>
+
+    <div class="sipoc-container">
+        
+        <!-- SUPPLIERS -->
+        <div class="sipoc-column col-s">
+            <div class="column-header">
+                <div class="letter">S</div>
+                <div class="title">Suppliers</div>
+                <div class="subtitle">Proveedores</div>
+            </div>
+            <div class="column-content">
+                <div class="item-card">
+                    <div class="item-title">Mesa de Consenso (S&OP)</div>
+                    <div class="item-desc">Ventas, Mercadeo y Planificación que definen el Plan de Ventas.</div>
+                </div>
+                <div class="item-card">
+                    <div class="item-title">Mercadeo / Solicitante</div>
+                    <div class="item-desc">Proveen la necesidad específica (para promocionales).</div>
+                </div>
+                <div class="item-card">
+                    <div class="item-title">Proveedores Externos</div>
+                    <div class="item-desc">Empresas con Contrato Marco o que envían cotizaciones spot.</div>
+                </div>
+                <div class="item-card">
+                    <div class="item-title">Operador Logístico / Agente Aduanal</div>
+                    <div class="item-desc">Ejecutan flete, desaduanamiento y gestión de comercio exterior (importaciones).</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- INPUTS -->
+        <div class="sipoc-column col-i">
+            <div class="column-header">
+                <div class="letter">I</div>
+                <div class="title">Inputs</div>
+                <div class="subtitle">Entradas</div>
+            </div>
+            <div class="column-content">
+                <div class="item-card">
+                    <div class="item-title">Plan de Ventas</div>
+                    <div class="item-desc">Base para calcular la necesidad de Producto Terminado.</div>
+                </div>
+                <div class="item-card">
+                    <div class="item-title">Solicitudes Directas</div>
+                    <div class="item-desc">Requerimientos fuera del MRP (Ej: Promocionales).</div>
+                </div>
+                <div class="item-card">
+                    <div class="item-title">Contratos Marco Vigentes</div>
+                    <div class="item-desc">Condiciones negociadas pre-año fiscal.</div>
+                    <span class="badge-info">Fluidez en compra</span>
+                </div>
+                <div class="item-card">
+                    <div class="item-title">Cotizaciones Comerciales</div>
+                    <div class="item-desc">Ofertas recibidas para compras de tipo reactivo.</div>
+                    <span class="badge-warning">Compra Reactiva</span>
+                </div>
+                <div class="item-card">
+                    <div class="item-title">Factura del Proveedor</div>
+                    <div class="item-desc">Documento contable emitido por el proveedor para su registro en SAP.</div>
+                </div>
+                <div class="item-card">
+                    <div class="item-title">Material Físico / Mercancía</div>
+                    <div class="item-desc">Bienes entregados por el proveedor para recepción en almacén.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PROCESS -->
+        <div class="sipoc-column col-p">
+            <div class="column-header">
+                <div class="letter">P</div>
+                <div class="title">Process</div>
+                <div class="subtitle">Proceso (Macro Pasos)</div>
+            </div>
+            <div class="column-content">
+                <div class="process-step">
+                    <span class="step-num">Paso 1</span>
+                    <h4>Plan de Ventas / Plan de Mercadeo</h4>
+                    <p>Define el plan de necesidades de Producto Terminado (Operaciones) o el presupuesto para proyectos (Mercadeo).</p>
+                </div>
+                <div class="process-step">
+                    <span class="step-num">Paso 2</span>
+                    <h4>Identificación de Materiales</h4>
+                    <p>Determinación de los materiales requeridos para cumplir el plan de necesidades de PT o el proyecto de Mercadeo.</p>
+                </div>
+                <div class="process-step">
+                    <span class="step-num">Paso 3</span>
+                    <h4>Generación de SOL PED</h4>
+                    <p>Los planificadores de Mercadeo o Abastecimiento emiten formalmente la Solicitud de Pedido en el sistema.</p>
+                </div>
+                <div class="process-step">
+                    <span class="step-num">Paso 4</span>
+                    <h4>Proceso de Compra</h4>
+                    <p>Los compradores asignados gestionan la compra garantizando la entrega de materiales en los tiempos acordados.</p>
+                </div>
+                <div class="process-step">
+                    <span class="step-num">Paso 5</span>
+                    <h4>Logística y Transporte</h4>
+                    <p>Logística coordina el traslado del material (importado o nacional) hasta el almacén de destino.</p>
+                </div>
+                <div class="process-step">
+                    <span class="step-num">Paso 6</span>
+                    <h4>Recepción y Registro de Factura</h4>
+                    <p>Se recibe la factura del proveedor y se registra en SAP. El momento de entrega varía según la modalidad de compra.</p>
+                </div>
+                <div class="process-step">
+                    <span class="step-num">Paso 7</span>
+                    <h4>Entrada de Mercancía</h4>
+                    <p>El almacén confirma la recepción física del material y registra formalmente la Entrada de Mercancía en SAP.</p>
+                </div>
+                <div class="process-step">
+                    <span class="step-num">Paso 8</span>
+                    <h4>Pago al Proveedor</h4>
+                    <p>Según las condiciones de pago pautadas, se gestionan y ejecutan los pagos correspondientes al proveedor.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- OUTPUTS -->
+        <div class="sipoc-column col-o">
+            <div class="column-header">
+                <div class="letter">O</div>
+                <div class="title">Outputs</div>
+                <div class="subtitle">Salidas</div>
+            </div>
+            <div class="column-content">
+                <div class="item-card">
+                    <div class="item-title">Plan de Necesidades PT / Presupuesto de Proyecto</div>
+                    <div class="item-desc">Resultado del consenso entre Ventas, Mercadeo y Operaciones.</div>
+                </div>
+                <div class="item-card">
+                    <div class="item-title">Orden de Compra (PO)</div>
+                    <div class="item-desc">Compromiso formal enviado al proveedor.</div>
+                </div>
+                <div class="item-card">
+                    <div class="item-title">Factura Registrada en SAP</div>
+                    <div class="item-desc">Documento contable del proveedor ingresado al sistema.</div>
+                </div>
+                <div class="item-card">
+                    <div class="item-title">Mercancía en Almacén</div>
+                    <div class="item-desc">Material físico recibido y confirmado, listo para producción o despacho.</div>
+                </div>
+                <div class="item-card">
+                    <div class="item-title">Pago Ejecutado</div>
+                    <div class="item-desc">Compromiso financiero saldado con el proveedor según condiciones pautadas.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CUSTOMERS -->
+        <div class="sipoc-column col-c">
+            <div class="column-header">
+                <div class="letter">C</div>
+                <div class="title">Customers</div>
+                <div class="subtitle">Clientes (Internos/Externos)</div>
+            </div>
+            <div class="column-content">
+                <div class="item-card">
+                    <div class="item-title">Planta / Producción</div>
+                    <div class="item-desc">Recibe la materia prima para fabricar el Producto Terminado.</div>
+                </div>
+                <div class="item-card">
+                    <div class="item-title">Mercadeo / Trade Marketing</div>
+                    <div class="item-desc">Reciben los materiales promocionales para sus proyectos y campañas.</div>
+                </div>
+                <div class="item-card">
+                    <div class="item-title">Proveedores Externos</div>
+                    <div class="item-desc">Reciben la Orden de Compra y el pago según las condiciones pautadas.</div>
+                </div>
+                <div class="item-card">
+                    <div class="item-title">Finanzas (Cuentas por Pagar)</div>
+                    <div class="item-desc">Reciben la documentación trazable (PO + GR + Factura) para ejecutar los pagos.</div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="footer">
+        Diseñado para el Proyecto de Grado · Estado Actual (As-Is)
+    </div>
+
+</body>
+</html>
