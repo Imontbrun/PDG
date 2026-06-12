@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trading Journal — Life Game</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --panel: #161b22;
+    --panel2: #1c2230;
+    --border: #2d333b;
+    --text: #e6edf3;
+    --muted: #8b949e;
+    --green: #3fb950;
+    --red: #f85149;
+    --gold: #e3b341;
+    --blue: #58a6ff;
+    --purple: #bc8cff;
+    --radius: 14px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    min-height: 100vh;
+    padding-bottom: 60px;
+  }
+  .container { max-width: 980px; margin: 0 auto; padding: 0 16px; }
+
+  /* ===== HEADER / HUD ===== */
+  header {
+    background: linear-gradient(135deg, #161b22 0%, #1a2233 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 20px 0;
+    margin-bottom: 24px;
+  }
+  .hud { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+  .avatar {
+    width: 64px; height: 64px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--purple), var(--blue));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 30px; flex-shrink: 0;
+    box-shadow: 0 0 18px rgba(88,166,255,.35);
+  }
+  .hud-info { flex: 1; min-width: 220px; }
+  .hud-title { font-size: 18px; font-weight: 700; }
+  .hud-level { color: var(--gold); font-size: 13px; font-weight: 600; letter-spacing: .5px; }
+  .xpbar-wrap { margin-top: 8px; background: #0a0e14; border-radius: 99px; height: 14px; overflow: hidden; border: 1px solid var(--border); }
+  .xpbar {
+    height: 100%; width: 0%;
+    background: linear-gradient(90deg, var(--purple), var(--blue));
+    border-radius: 99px; transition: width .6s ease;
+  }
+  .xp-label { font-size: 11px; color: var(--muted); margin-top: 4px; }
+  .hud-stats { display: flex; gap: 14px; }
+  .hud-chip {
+    background: var(--panel2); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 10px 16px; text-align: center; min-width: 86px;
+  }
+  .hud-chip .v { font-size: 20px; font-weight: 700; }
+  .hud-chip .k { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+
+  /* ===== TABS ===== */
+  .tabs { display: flex; gap: 10px; margin-bottom: 22px; }
+  .tab {
+    flex: 1; padding: 12px; border-radius: var(--radius);
+    background: var(--panel); border: 1px solid var(--border);
+    color: var(--muted); font-size: 15px; font-weight: 600;
+    cursor: pointer; text-align: center; transition: all .2s;
+  }
+  .tab.active { background: var(--panel2); color: var(--text); border-color: var(--blue); box-shadow: 0 0 12px rgba(88,166,255,.18); }
+  .page { display: none; }
+  .page.active { display: block; animation: fadeIn .25s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+  /* ===== CARDS / FORM ===== */
+  .card {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 22px; margin-bottom: 20px;
+  }
+  .card h2 { font-size: 16px; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+  @media (max-width: 640px) { .grid2, .grid3 { grid-template-columns: 1fr; } .hud-stats { width: 100%; justify-content: space-between; } }
+  label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; font-weight: 600; }
+  input, select, textarea {
+    width: 100%; background: #0a0e14; border: 1px solid var(--border);
+    border-radius: 10px; padding: 10px 12px; color: var(--text); font-size: 14px;
+    font-family: inherit;
+  }
+  input:focus, select:focus, textarea:focus { outline: none; border-color: var(--blue); }
+  textarea { resize: vertical; min-height: 70px; }
+  .field { margin-bottom: 14px; }
+
+  /* toggle pills */
+  .pills { display: flex; gap: 8px; }
+  .pill {
+    flex: 1; padding: 10px; border-radius: 10px; text-align: center;
+    background: #0a0e14; border: 1px solid var(--border); color: var(--muted);
+    cursor: pointer; font-size: 13px; font-weight: 600; transition: all .15s;
+  }
+  .pill.on-yes { background: rgba(63,185,80,.15); border-color: var(--green); color: var(--green); }
+  .pill.on-no { background: rgba(248,81,73,.15); border-color: var(--red); color: var(--red); }
+
+  /* mood selector */
+  .moods { display: flex; gap: 8px; }
+  .mood {
+    flex: 1; padding: 10px 4px; font-size: 24px; text-align: center;
+    background: #0a0e14; border: 1px solid var(--border); border-radius: 10px;
+    cursor: pointer; transition: all .15s; filter: grayscale(1); opacity: .6;
+  }
+  .mood.sel { filter: none; opacity: 1; border-color: var(--gold); background: rgba(227,179,65,.12); transform: scale(1.08); }
+
+  .btn {
+    width: 100%; padding: 14px; border: none; border-radius: var(--radius);
+    background: linear-gradient(90deg, var(--purple), var(--blue));
+    color: #fff; font-size: 16px; font-weight: 700; cursor: pointer;
+    transition: transform .15s, box-shadow .15s; font-family: inherit;
+  }
+  .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(88,166,255,.3); }
+  .session-note { font-size: 12px; color: var(--muted); text-align: center; margin-top: 10px; }
+
+  /* ===== ENTRIES LIST ===== */
+  .entry {
+    display: flex; align-items: center; gap: 14px;
+    background: var(--panel2); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 14px 16px; margin-bottom: 10px;
+    cursor: pointer; transition: border-color .15s;
+  }
+  .entry:hover { border-color: var(--blue); }
+  .entry .emoji { font-size: 26px; }
+  .entry .info { flex: 1; }
+  .entry .date { font-weight: 700; font-size: 14px; }
+  .entry .meta { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .entry .pnl { font-weight: 700; font-size: 15px; }
+  .pnl.pos { color: var(--green); }
+  .pnl.neg { color: var(--red); }
+  .pnl.zero { color: var(--muted); }
+  .entry .del { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 16px; padding: 4px; }
+  .entry .del:hover { color: var(--red); }
+  .badges-row { display: flex; gap: 4px; margin-top: 4px; flex-wrap: wrap; }
+  .mini-badge { font-size: 10px; padding: 2px 7px; border-radius: 99px; border: 1px solid var(--border); color: var(--muted); }
+  .mini-badge.ok { border-color: rgba(63,185,80,.5); color: var(--green); }
+  .mini-badge.bad { border-color: rgba(248,81,73,.5); color: var(--red); }
+
+  /* ===== ANALYTICS ===== */
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 20px; }
+  .stat {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 16px; text-align: center;
+  }
+  .stat .v { font-size: 24px; font-weight: 800; }
+  .stat .k { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .8px; margin-top: 4px; }
+  canvas { width: 100%; }
+
+  .disc-row { margin-bottom: 14px; }
+  .disc-row .disc-head { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 5px; }
+  .disc-bar-wrap { background: #0a0e14; border-radius: 99px; height: 10px; overflow: hidden; border: 1px solid var(--border); }
+  .disc-bar { height: 100%; border-radius: 99px; transition: width .6s ease; }
+
+  .achievements { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+  .ach {
+    display: flex; gap: 12px; align-items: center;
+    background: var(--panel2); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 12px;
+  }
+  .ach.locked { opacity: .35; filter: grayscale(1); }
+  .ach .icon { font-size: 26px; }
+  .ach .t { font-size: 13px; font-weight: 700; }
+  .ach .d { font-size: 11px; color: var(--muted); }
+
+  .empty { text-align: center; color: var(--muted); padding: 30px 0; font-size: 14px; }
+
+  /* ===== TOAST / LEVEL UP ===== */
+  #toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(120px);
+    background: var(--panel2); border: 1px solid var(--gold); color: var(--text);
+    padding: 14px 24px; border-radius: var(--radius); font-weight: 700; font-size: 15px;
+    transition: transform .35s cubic-bezier(.34,1.56,.64,1); z-index: 99;
+    box-shadow: 0 8px 30px rgba(0,0,0,.5); text-align: center; max-width: 90vw;
+  }
+  #toast.show { transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="container hud">
+    <div class="avatar" id="hudAvatar">📈</div>
+    <div class="hud-info">
+      <div class="hud-title">Trader</div>
+      <div class="hud-level" id="hudLevel">Nivel 1 · Novato</div>
+      <div class="xpbar-wrap"><div class="xpbar" id="xpBar"></div></div>
+      <div class="xp-label" id="xpLabel">0 XP</div>
+    </div>
+    <div class="hud-stats">
+      <div class="hud-chip"><div class="v" id="hudStreak">0🔥</div><div class="k">Racha</div></div>
+      <div class="hud-chip"><div class="v" id="hudWinrate">—</div><div class="k">Acierto</div></div>
+      <div class="hud-chip"><div class="v pnl" id="hudPnl">$0</div><div class="k">P&L Total</div></div>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+  <div class="tabs">
+    <div class="tab active" data-page="journal" onclick="showPage('journal')">📓 Journal</div>
+    <div class="tab" data-page="analytics" onclick="showPage('analytics')">📊 Analytics</div>
+  </div>
+
+  <!-- ============ PAGE: JOURNAL ============ -->
+  <div class="page active" id="page-journal">
+    <div class="card">
+      <h2>📝 Registro del día <span id="formMode" style="font-size:11px;color:var(--muted);font-weight:400;"></span></h2>
+
+      <div class="grid3">
+        <div class="field">
+          <label>Fecha</label>
+          <input type="date" id="fDate">
+        </div>
+        <div class="field">
+          <label>⏰ ¿A qué hora te despertaste?</label>
+          <input type="time" id="fWake" value="07:00">
+        </div>
+        <div class="field">
+          <label>🪑 ¿A qué hora te sentaste a ver gráficos?</label>
+          <input type="time" id="fSit" value="09:00">
+        </div>
+      </div>
+
+      <div class="grid2">
+        <div class="field">
+          <label>🍳 ¿Desayunaste antes de tradear?</label>
+          <div class="pills" id="fBreakfast">
+            <div class="pill" data-v="yes" onclick="setPill('fBreakfast','yes')">Sí</div>
+            <div class="pill" data-v="no" onclick="setPill('fBreakfast','no')">No</div>
+          </div>
+        </div>
+        <div class="field">
+          <label>🎯 ¿Tomaste entradas?</label>
+          <div class="pills" id="fTook">
+            <div class="pill" data-v="yes" onclick="setPill('fTook','yes'); toggleTrades(true)">Sí</div>
+            <div class="pill" data-v="no" onclick="setPill('fTook','no'); toggleTrades(false)">No</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="tradesBlock" style="display:none;">
+        <div class="grid3">
+          <div class="field">
+            <label>✅ Entradas exitosas</label>
+            <input type="number" id="fWins" min="0" value="0">
+          </div>
+          <div class="field">
+            <label>❌ Entradas erróneas</label>
+            <input type="number" id="fLosses" min="0" value="0">
+          </div>
+          <div class="field">
+            <label>💵 P&L del día ($, negativo si perdiste)</label>
+            <input type="number" id="fPnl" step="0.01" value="0">
+          </div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>😶 Sensaciones de la sesión</label>
+        <div class="moods" id="fMood">
+          <div class="mood" data-v="1" onclick="setMood(1)" title="Muy mal">😫</div>
+          <div class="mood" data-v="2" onclick="setMood(2)" title="Mal">😕</div>
+          <div class="mood" data-v="3" onclick="setMood(3)" title="Neutral">😐</div>
+          <div class="mood" data-v="4" onclick="setMood(4)" title="Bien">🙂</div>
+          <div class="mood" data-v="5" onclick="setMood(5)" title="Excelente">🤩</div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>🗒️ Notas de la sesión (opcional)</label>
+        <textarea id="fNotes" placeholder="¿Qué viste en el mercado? ¿Cómo te sentiste? ¿Qué aprendiste?"></textarea>
+      </div>
+
+      <div class="grid3">
+        <div class="field">
+          <label>📐 ¿Seguiste la estrategia?</label>
+          <div class="pills" id="fStrategy">
+            <div class="pill" data-v="yes" onclick="setPill('fStrategy','yes')">Sí</div>
+            <div class="pill" data-v="no" onclick="setPill('fStrategy','no')">No</div>
+          </div>
+        </div>
+        <div class="field">
+          <label>🛡️ ¿Buen risk management?</label>
+          <div class="pills" id="fRisk">
+            <div class="pill" data-v="yes" onclick="setPill('fRisk','yes')">Sí</div>
+            <div class="pill" data-v="no" onclick="setPill('fRisk','no')">No</div>
+          </div>
+        </div>
+        <div class="field">
+          <label>🧠 ¿Buena mentalidad?</label>
+          <div class="pills" id="fMentality">
+            <div class="pill" data-v="yes" onclick="setPill('fMentality','yes')">Sí</div>
+            <div class="pill" data-v="no" onclick="setPill('fMentality','no')">No</div>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn" onclick="saveEntry()">⚔️ Guardar sesión y ganar XP</button>
+      <div class="session-note">Tu sesión de trading: lunes a viernes, 9:00 – 11:00. Llena el journal al terminar. 🕚</div>
+    </div>
+
+    <div class="card">
+      <h2>📚 Historial de sesiones</h2>
+      <div id="entriesList"></div>
+    </div>
+  </div>
+
+  <!-- ============ PAGE: ANALYTICS ============ -->
+  <div class="page" id="page-analytics">
+    <div class="stat-grid">
+      <div class="stat"><div class="v" id="sWinrate">—</div><div class="k">% de acierto</div></div>
+      <div class="stat"><div class="v" id="sGreenDays">—</div><div class="k">Días verdes</div></div>
+      <div class="stat"><div class="v" id="sTrades">0</div><div class="k">Entradas totales</div></div>
+      <div class="stat"><div class="v" id="sAvgPnl">$0</div><div class="k">P&L promedio/día</div></div>
+      <div class="stat"><div class="v" id="sBestDay">$0</div><div class="k">Mejor día</div></div>
+      <div class="stat"><div class="v" id="sWorstDay">$0</div><div class="k">Peor día</div></div>
+      <div class="stat"><div class="v" id="sBestStreak">0🔥</div><div class="k">Mejor racha</div></div>
+      <div class="stat"><div class="v" id="sSessions">0</div><div class="k">Sesiones registradas</div></div>
+    </div>
+
+    <div class="card">
+      <h2>💰 Curva de capital (P&L acumulado)</h2>
+      <canvas id="equityChart" height="220"></canvas>
+    </div>
+
+    <div class="card">
+      <h2>🧭 Disciplina y hábitos</h2>
+      <div id="discipline"></div>
+    </div>
+
+    <div class="card">
+      <h2>😶 Sensaciones promedio por resultado</h2>
+      <div id="moodInsight" class="empty">Registra sesiones para ver insights.</div>
+    </div>
+
+    <div class="card">
+      <h2>🏆 Logros</h2>
+      <div class="achievements" id="achievements"></div>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ================= STORAGE =================
+const KEY = 'tradingJournal.v1';
+function load() {
+  try { return JSON.parse(localStorage.getItem(KEY)) || { entries: {} }; }
+  catch { return { entries: {} }; }
+}
+function persist() { localStorage.setItem(KEY, JSON.stringify(state)); }
+let state = load();
+
+// ================= GAME RULES =================
+const LEVELS = [
+  { xp: 0,     name: 'Novato',              icon: '🐣' },
+  { xp: 300,   name: 'Aprendiz',            icon: '📖' },
+  { xp: 800,   name: 'Operador Disciplinado', icon: '🎯' },
+  { xp: 1600,  name: 'Cazador de Setups',   icon: '🏹' },
+  { xp: 2800,  name: 'Gestor del Riesgo',   icon: '🛡️' },
+  { xp: 4500,  name: 'Mente de Acero',      icon: '🧠' },
+  { xp: 7000,  name: 'Maestro del Mercado', icon: '👑' },
+  { xp: 10000, name: 'Leyenda del Trading', icon: '🐉' },
+];
+
+function entryXP(e) {
+  let xp = 50; // base por llenar el journal
+  if (e.breakfast === 'yes') xp += 10;
+  if (e.sit && e.sit <= '09:00') xp += 10;   // puntual en los gráficos
+  if (e.strategy === 'yes') xp += 15;
+  if (e.risk === 'yes') xp += 15;
+  if (e.mentality === 'yes') xp += 15;
+  if (e.strategy === 'yes' && e.risk === 'yes' && e.mentality === 'yes') xp += 20; // trifecta
+  if (e.took === 'yes' && Number(e.pnl) > 0) xp += 20;
+  if (e.took === 'no') xp += 10; // paciencia: no operar también es una decisión
+  return xp;
+}
+
+function sortedEntries() {
+  return Object.values(state.entries).sort((a, b) => a.date.localeCompare(b.date));
+}
+
+function totalXP() { return sortedEntries().reduce((s, e) => s + entryXP(e), 0); }
+
+function levelFor(xp) {
+  let lvl = 0;
+  for (let i = 0; i < LEVELS.length; i++) if (xp >= LEVELS[i].xp) lvl = i;
+  return lvl;
+}
+
+// streak = días hábiles consecutivos con journal, terminando en la entrada más reciente
+function calcStreaks() {
+  const dates = sortedEntries().map(e => e.date);
+  if (!dates.length) return { current: 0, best: 0 };
+  const set = new Set(dates);
+  let best = 0, current = 0;
+  for (const d of dates) {
+    const prev = prevWeekday(d);
+    // longitud de racha terminando en d
+    let len = 1, p = prev;
+    while (set.has(p)) { len++; p = prevWeekday(p); }
+    if (len > best) best = len;
+  }
+  // racha actual: termina en la última entrada, válida si la última entrada es hoy o el último día hábil pasado
+  const last = dates[dates.length - 1];
+  const today = isoToday();
+  if (last === today || last === lastWeekdayOnOrBefore(addDays(today, -1)) || (isWeekday(today) && last === prevWeekday(today))) {
+    let len = 1, p = prevWeekday(last);
+    while (set.has(p)) { len++; p = prevWeekday(p); }
+    current = len;
+  }
+  return { current, best };
+}
+
+// ================= DATE HELPERS =================
+function isoToday() {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+function addDays(iso, n) {
+  const d = new Date(iso + 'T12:00:00');
+  d.setDate(d.getDate() + n);
+  return d.toISOString().slice(0, 10);
+}
+function dayOfWeek(iso) { return new Date(iso + 'T12:00:00').getDay(); } // 0=dom
+function isWeekday(iso) { const d = dayOfWeek(iso); return d >= 1 && d <= 5; }
+function prevWeekday(iso) {
+  let p = addDays(iso, -1);
+  while (!isWeekday(p)) p = addDays(p, -1);
+  return p;
+}
+function lastWeekdayOnOrBefore(iso) {
+  let p = iso;
+  while (!isWeekday(p)) p = addDays(p, -1);
+  return p;
+}
+function fmtDate(iso) {
+  const names = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+  const months = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+  const d = new Date(iso + 'T12:00:00');
+  return names[d.getDay()] + ' ' + d.getDate() + ' ' + months[d.getMonth()] + ' ' + d.getFullYear();
+}
+function fmtMoney(n) {
+  const sign = n < 0 ? '-' : '';
+  return sign + '$' + Math.abs(n).toFixed(2).replace(/\.00$/, '');
+}
+
+// ================= FORM =================
+const MOOD_EMOJI = { 1: '😫', 2: '😕', 3: '😐', 4: '🙂', 5: '🤩' };
+let formMood = 0;
+
+function setPill(id, v) {
+  const wrap = document.getElementById(id);
+  wrap.querySelectorAll('.pill').forEach(p => {
+    p.classList.remove('on-yes', 'on-no');
+    if (p.dataset.v === v) p.classList.add(v === 'yes' ? 'on-yes' : 'on-no');
+  });
+  wrap.dataset.value = v;
+}
+function getPill(id) { return document.getElementById(id).dataset.value || ''; }
+
+function setMood(v) {
+  formMood = v;
+  document.querySelectorAll('#fMood .mood').forEach(m => m.classList.toggle('sel', Number(m.dataset.v) === v));
+}
+
+function toggleTrades(show) {
+  document.getElementById('tradesBlock').style.display = show ? 'block' : 'none';
+}
+
+function resetForm() {
+  document.getElementById('fDate').value = isoToday();
+  document.getElementById('fWake').value = '07:00';
+  document.getElementById('fSit').value = '09:00';
+  document.getElementById('fWins').value = 0;
+  document.getElementById('fLosses').value = 0;
+  document.getElementById('fPnl').value = 0;
+  document.getElementById('fNotes').value = '';
+  ['fBreakfast', 'fTook', 'fStrategy', 'fRisk', 'fMentality'].forEach(id => {
+    const wrap = document.getElementById(id);
+    delete wrap.dataset.value;
+    wrap.querySelectorAll('.pill').forEach(p => p.classList.remove('on-yes', 'on-no'));
+  });
+  setMood(0);
+  toggleTrades(false);
+  document.getElementById('formMode').textContent = '';
+}
+
+function loadEntryToForm(date) {
+  const e = state.entries[date];
+  if (!e) return;
+  document.getElementById('fDate').value = e.date;
+  document.getElementById('fWake').value = e.wake || '07:00';
+  document.getElementById('fSit').value = e.sit || '09:00';
+  setPill('fBreakfast', e.breakfast);
+  setPill('fTook', e.took);
+  toggleTrades(e.took === 'yes');
+  document.getElementById('fWins').value = e.wins || 0;
+  document.getElementById('fLosses').value = e.losses || 0;
+  document.getElementById('fPnl').value = e.pnl || 0;
+  setMood(e.mood || 0);
+  document.getElementById('fNotes').value = e.notes || '';
+  setPill('fStrategy', e.strategy);
+  setPill('fRisk', e.risk);
+  setPill('fMentality', e.mentality);
+  document.getElementById('formMode').textContent = '(editando ' + fmtDate(date) + ')';
+  showPage('journal');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function saveEntry() {
+  const date = document.getElementById('fDate').value;
+  if (!date) return toast('⚠️ Elige una fecha');
+  if (!isWeekday(date)) return toast('🛌 El journal es de lunes a viernes — el finde se descansa');
+  const required = ['fBreakfast', 'fTook', 'fStrategy', 'fRisk', 'fMentality'];
+  for (const id of required) {
+    if (!getPill(id)) return toast('⚠️ Responde todas las preguntas Sí/No');
+  }
+  if (!formMood) return toast('⚠️ Elige cómo te sentiste en la sesión');
+
+  const took = getPill('fTook');
+  const isEdit = !!state.entries[date];
+  const prevLevel = levelFor(totalXP());
+
+  const e = {
+    date,
+    wake: document.getElementById('fWake').value,
+    sit: document.getElementById('fSit').value,
+    breakfast: getPill('fBreakfast'),
+    took,
+    wins: took === 'yes' ? Math.max(0, Number(document.getElementById('fWins').value) || 0) : 0,
+    losses: took === 'yes' ? Math.max(0, Number(document.getElementById('fLosses').value) || 0) : 0,
+    pnl: took === 'yes' ? (Number(document.getElementById('fPnl').value) || 0) : 0,
+    mood: formMood,
+    notes: document.getElementById('fNotes').value.trim(),
+    strategy: getPill('fStrategy'),
+    risk: getPill('fRisk'),
+    mentality: getPill('fMentality'),
+  };
+  state.entries[date] = e;
+  persist();
+  resetForm();
+  renderAll();
+
+  const newLevel = levelFor(totalXP());
+  if (newLevel > prevLevel) {
+    toast('🎉 ¡SUBISTE DE NIVEL! Ahora eres ' + LEVELS[newLevel].icon + ' ' + LEVELS[newLevel].name);
+  } else {
+    toast((isEdit ? '✏️ Sesión actualizada' : '⚔️ +' + entryXP(e) + ' XP — ¡Sesión registrada!'));
+  }
+}
+
+function deleteEntry(date, ev) {
+  ev.stopPropagation();
+  if (!confirm('¿Borrar la sesión del ' + fmtDate(date) + '?')) return;
+  delete state.entries[date];
+  persist();
+  renderAll();
+}
+
+// ================= RENDER =================
+function showPage(name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.page === name));
+  document.querySelectorAll('.page').forEach(p => p.classList.toggle('active', p.id === 'page-' + name));
+  if (name === 'analytics') renderAnalytics();
+}
+
+function renderAll() {
+  renderHUD();
+  renderEntries();
+  renderAnalytics();
+}
+
+function renderHUD() {
+  const xp = totalXP();
+  const lvl = levelFor(xp);
+  const cur = LEVELS[lvl];
+  const next = LEVELS[lvl + 1];
+  document.getElementById('hudAvatar').textContent = cur.icon;
+  document.getElementById('hudLevel').textContent = 'Nivel ' + (lvl + 1) + ' · ' + cur.name;
+  const pct = next ? ((xp - cur.xp) / (next.xp - cur.xp)) * 100 : 100;
+  document.getElementById('xpBar').style.width = pct + '%';
+  document.getElementById('xpLabel').textContent = next
+    ? xp + ' XP — faltan ' + (next.xp - xp) + ' XP para ' + next.name
+    : xp + ' XP — ¡Nivel máximo!';
+
+  const { current } = calcStreaks();
+  document.getElementById('hudStreak').textContent = current + '🔥';
+
+  const entries = sortedEntries();
+  const wins = entries.reduce((s, e) => s + (e.wins || 0), 0);
+  const losses = entries.reduce((s, e) => s + (e.losses || 0), 0);
+  const wr = wins + losses > 0 ? Math.round((wins / (wins + losses)) * 100) + '%' : '—';
+  document.getElementById('hudWinrate').textContent = wr;
+
+  const pnl = entries.reduce((s, e) => s + (Number(e.pnl) || 0), 0);
+  const el = document.getElementById('hudPnl');
+  el.textContent = fmtMoney(pnl);
+  el.className = 'v pnl ' + (pnl > 0 ? 'pos' : pnl < 0 ? 'neg' : 'zero');
+}
+
+function renderEntries() {
+  const list = document.getElementById('entriesList');
+  const entries = sortedEntries().reverse();
+  if (!entries.length) {
+    list.innerHTML = '<div class="empty">Aún no hay sesiones. Registra tu primera sesión y empieza a subir de nivel. 🚀</div>';
+    return;
+  }
+  list.innerHTML = entries.map(e => {
+    const pnl = Number(e.pnl) || 0;
+    const pnlCls = pnl > 0 ? 'pos' : pnl < 0 ? 'neg' : 'zero';
+    const badge = (label, ok) => '<span class="mini-badge ' + (ok ? 'ok' : 'bad') + '">' + label + '</span>';
+    const tradeTxt = e.took === 'yes'
+      ? '✅ ' + (e.wins || 0) + ' · ❌ ' + (e.losses || 0)
+      : 'Sin entradas (paciencia 🧘)';
+    return '<div class="entry" onclick="loadEntryToForm(\'' + e.date + '\')">' +
+      '<div class="emoji">' + (MOOD_EMOJI[e.mood] || '😐') + '</div>' +
+      '<div class="info">' +
+        '<div class="date">' + fmtDate(e.date) + '</div>' +
+        '<div class="meta">⏰ ' + (e.wake || '—') + ' · 🪑 ' + (e.sit || '—') + ' · ' + tradeTxt + '</div>' +
+        '<div class="badges-row">' +
+          badge('🍳 Desayuno', e.breakfast === 'yes') +
+          badge('📐 Estrategia', e.strategy === 'yes') +
+          badge('🛡️ Riesgo', e.risk === 'yes') +
+          badge('🧠 Mente', e.mentality === 'yes') +
+        '</div>' +
+      '</div>' +
+      '<div class="pnl ' + pnlCls + '">' + fmtMoney(pnl) + '<div style="font-size:10px;color:var(--gold);text-align:right;">+' + entryXP(e) + ' XP</div></div>' +
+      '<button class="del" onclick="deleteEntry(\'' + e.date + '\', event)" title="Borrar">🗑️</button>' +
+    '</div>';
+  }).join('');
+}
+
+// ================= ANALYTICS =================
+function pctOf(entries, fn) {
+  if (!entries.length) return null;
+  return Math.round((entries.filter(fn).length / entries.length) * 100);
+}
+
+function renderAnalytics() {
+  const entries = sortedEntries();
+  const wins = entries.reduce((s, e) => s + (e.wins || 0), 0);
+  const losses = entries.reduce((s, e) => s + (e.losses || 0), 0);
+  const totalTrades = wins + losses;
+  const tradedDays = entries.filter(e => e.took === 'yes');
+  const greenDays = tradedDays.filter(e => Number(e.pnl) > 0).length;
+  const pnls = entries.map(e => Number(e.pnl) || 0);
+  const totalPnl = pnls.reduce((s, p) => s + p, 0);
+  const { best } = calcStreaks();
+
+  document.getElementById('sWinrate').textContent = totalTrades ? Math.round((wins / totalTrades) * 100) + '%' : '—';
+  document.getElementById('sGreenDays').textContent = tradedDays.length ? greenDays + '/' + tradedDays.length : '—';
+  document.getElementById('sTrades').textContent = totalTrades;
+  document.getElementById('sAvgPnl').textContent = tradedDays.length ? fmtMoney(totalPnl / tradedDays.length) : '$0';
+  document.getElementById('sBestDay').textContent = pnls.length ? fmtMoney(Math.max(0, ...pnls)) : '$0';
+  document.getElementById('sWorstDay').textContent = pnls.length ? fmtMoney(Math.min(0, ...pnls)) : '$0';
+  document.getElementById('sBestStreak').textContent = best + '🔥';
+  document.getElementById('sSessions').textContent = entries.length;
+
+  drawEquity(entries);
+  renderDiscipline(entries);
+  renderMoodInsight(entries);
+  renderAchievements(entries, wins, losses, best);
+}
+
+function drawEquity(entries) {
+  const canvas = document.getElementById('equityChart');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.clientWidth || canvas.parentElement.clientWidth - 44;
+  const H = 220;
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = W * dpr; canvas.height = H * dpr;
+  canvas.style.height = H + 'px';
+  ctx.scale(dpr, dpr);
+  ctx.clearRect(0, 0, W, H);
+
+  if (entries.length < 1) {
+    ctx.fillStyle = '#8b949e'; ctx.font = '13px Segoe UI'; ctx.textAlign = 'center';
+    ctx.fillText('Registra sesiones para ver tu curva de capital', W / 2, H / 2);
+    return;
+  }
+
+  const cum = [];
+  let acc = 0;
+  for (const e of entries) { acc += Number(e.pnl) || 0; cum.push(acc); }
+  const pts = [0, ...cum];
+  const min = Math.min(0, ...pts), max = Math.max(0, ...pts);
+  const range = (max - min) || 1;
+  const padL = 50, padR = 14, padT = 14, padB = 24;
+  const x = i => padL + (i / (pts.length - 1)) * (W - padL - padR);
+  const y = v => padT + (1 - (v - min) / range) * (H - padT - padB);
+
+  // grid + labels
+  ctx.strokeStyle = '#21262d'; ctx.fillStyle = '#8b949e'; ctx.font = '10px Segoe UI'; ctx.textAlign = 'right';
+  for (let i = 0; i <= 4; i++) {
+    const v = min + (range * i) / 4;
+    ctx.beginPath(); ctx.moveTo(padL, y(v)); ctx.lineTo(W - padR, y(v)); ctx.stroke();
+    ctx.fillText(fmtMoney(v), padL - 6, y(v) + 3);
+  }
+  // zero line
+  ctx.strokeStyle = '#3d444d';
+  ctx.beginPath(); ctx.moveTo(padL, y(0)); ctx.lineTo(W - padR, y(0)); ctx.stroke();
+
+  // area fill
+  const lastVal = pts[pts.length - 1];
+  const lineColor = lastVal >= 0 ? '#3fb950' : '#f85149';
+  const grad = ctx.createLinearGradient(0, padT, 0, H - padB);
+  grad.addColorStop(0, lastVal >= 0 ? 'rgba(63,185,80,.25)' : 'rgba(248,81,73,.25)');
+  grad.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.beginPath();
+  ctx.moveTo(x(0), y(0));
+  pts.forEach((v, i) => ctx.lineTo(x(i), y(v)));
+  ctx.lineTo(x(pts.length - 1), y(0));
+  ctx.closePath();
+  ctx.fillStyle = grad; ctx.fill();
+
+  // line
+  ctx.beginPath();
+  pts.forEach((v, i) => i === 0 ? ctx.moveTo(x(i), y(v)) : ctx.lineTo(x(i), y(v)));
+  ctx.strokeStyle = lineColor; ctx.lineWidth = 2.5; ctx.lineJoin = 'round'; ctx.stroke();
+
+  // dots
+  ctx.fillStyle = lineColor;
+  pts.forEach((v, i) => { ctx.beginPath(); ctx.arc(x(i), y(v), 3, 0, Math.PI * 2); ctx.fill(); });
+
+  // date labels (primera y última)
+  ctx.fillStyle = '#8b949e'; ctx.textAlign = 'left';
+  ctx.fillText(fmtDate(entries[0].date), padL, H - 8);
+  ctx.textAlign = 'right';
+  ctx.fillText(fmtDate(entries[entries.length - 1].date), W - padR, H - 8);
+}
+
+function renderDiscipline(entries) {
+  const el = document.getElementById('discipline');
+  if (!entries.length) {
+    el.innerHTML = '<div class="empty">Registra sesiones para medir tu disciplina.</div>';
+    return;
+  }
+  const rows = [
+    { label: '🍳 Desayuno antes de tradear', pct: pctOf(entries, e => e.breakfast === 'yes') },
+    { label: '🪑 Sentado a los gráficos a las 9:00 o antes', pct: pctOf(entries, e => e.sit && e.sit <= '09:00') },
+    { label: '📐 Seguí la estrategia', pct: pctOf(entries, e => e.strategy === 'yes') },
+    { label: '🛡️ Buen risk management', pct: pctOf(entries, e => e.risk === 'yes') },
+    { label: '🧠 Buena mentalidad', pct: pctOf(entries, e => e.mentality === 'yes') },
+  ];
+  el.innerHTML = rows.map(r => {
+    const color = r.pct >= 80 ? 'var(--green)' : r.pct >= 50 ? 'var(--gold)' : 'var(--red)';
+    return '<div class="disc-row">' +
+      '<div class="disc-head"><span>' + r.label + '</span><span style="color:' + color + ';font-weight:700;">' + r.pct + '%</span></div>' +
+      '<div class="disc-bar-wrap"><div class="disc-bar" style="width:' + r.pct + '%;background:' + color + ';"></div></div>' +
+    '</div>';
+  }).join('');
+}
+
+function renderMoodInsight(entries) {
+  const el = document.getElementById('moodInsight');
+  const traded = entries.filter(e => e.took === 'yes' && e.mood);
+  if (traded.length < 2) {
+    el.className = 'empty';
+    el.innerHTML = 'Registra al menos 2 sesiones con entradas para ver insights.';
+    return;
+  }
+  const green = traded.filter(e => Number(e.pnl) > 0);
+  const red = traded.filter(e => Number(e.pnl) < 0);
+  const avg = arr => arr.length ? (arr.reduce((s, e) => s + e.mood, 0) / arr.length) : null;
+  const fmt = v => v === null ? '—' : MOOD_EMOJI[Math.round(v)] + ' (' + v.toFixed(1) + '/5)';
+  el.className = '';
+  el.innerHTML =
+    '<div style="display:flex;gap:14px;flex-wrap:wrap;">' +
+      '<div class="stat" style="flex:1;min-width:140px;"><div class="v">' + fmt(avg(green)) + '</div><div class="k">Sensación en días verdes</div></div>' +
+      '<div class="stat" style="flex:1;min-width:140px;"><div class="v">' + fmt(avg(red)) + '</div><div class="k">Sensación en días rojos</div></div>' +
+      '<div class="stat" style="flex:1;min-width:140px;"><div class="v">' + fmt(avg(traded)) + '</div><div class="k">Sensación general</div></div>' +
+    '</div>';
+}
+
+function renderAchievements(entries, wins, losses, bestStreak) {
+  const n = entries.length;
+  const totalTrades = wins + losses;
+  const wr = totalTrades ? (wins / totalTrades) * 100 : 0;
+  const totalPnl = entries.reduce((s, e) => s + (Number(e.pnl) || 0), 0);
+  const fullDiscipline = entries.filter(e => e.strategy === 'yes' && e.risk === 'yes' && e.mentality === 'yes').length;
+  const patience = entries.filter(e => e.took === 'no').length;
+  const breakfasts = entries.filter(e => e.breakfast === 'yes').length;
+
+  const ACHS = [
+    { icon: '🐣', t: 'Primer paso', d: 'Registra tu primera sesión', ok: n >= 1 },
+    { icon: '📅', t: 'Semana completa', d: 'Racha de 5 días hábiles', ok: bestStreak >= 5 },
+    { icon: '🔥', t: 'Imparable', d: 'Racha de 10 días hábiles', ok: bestStreak >= 10 },
+    { icon: '📚', t: 'Mes de bitácora', d: '20 sesiones registradas', ok: n >= 20 },
+    { icon: '🍳', t: 'Bien alimentado', d: 'Desayuna 10 veces antes de tradear', ok: breakfasts >= 10 },
+    { icon: '🧘', t: 'Paciencia zen', d: '5 días sin operar (esperar también es tradear)', ok: patience >= 5 },
+    { icon: '🎯', t: 'Francotirador', d: '% de acierto ≥ 60% con 10+ entradas', ok: totalTrades >= 10 && wr >= 60 },
+    { icon: '🛡️', t: 'Disciplina total', d: '10 sesiones con estrategia + riesgo + mente en Sí', ok: fullDiscipline >= 10 },
+    { icon: '💚', t: 'Primer día verde', d: 'Cierra un día en positivo', ok: entries.some(e => Number(e.pnl) > 0) },
+    { icon: '💰', t: 'En verde', d: 'P&L acumulado positivo con 10+ sesiones', ok: n >= 10 && totalPnl > 0 },
+    { icon: '👑', t: 'Maestro del Mercado', d: 'Alcanza el nivel 7', ok: levelFor(totalXP()) >= 6 },
+    { icon: '🐉', t: 'Leyenda', d: 'Alcanza el nivel máximo', ok: levelFor(totalXP()) >= 7 },
+  ];
+  document.getElementById('achievements').innerHTML = ACHS.map(a =>
+    '<div class="ach' + (a.ok ? '' : ' locked') + '">' +
+      '<div class="icon">' + a.icon + '</div>' +
+      '<div><div class="t">' + a.t + '</div><div class="d">' + a.d + '</div></div>' +
+    '</div>'
+  ).join('');
+}
+
+// ================= TOAST =================
+let toastTimer;
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 3500);
+}
+
+// ================= INIT =================
+resetForm();
+renderAll();
+window.addEventListener('resize', () => drawEquity(sortedEntries()));
+</script>
+</body>
+</html>
